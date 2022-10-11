@@ -2,9 +2,20 @@
 import React, { useState } from "react";
 import Minutes from "../minutes-select";
 import Hour from "../hour-select";
+import FrontHourText from "../components/Text/FrontHourText";
+import EveryText from "../components/Text/EveryText";
+import {
+  Box,
+  TextField,
+  FormControl,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
+} from "@mui/material";
 
 const DailyCron = ({ onChange, translate, value }) => {
   const [every, setEvery] = useState(value[3] !== "?");
+  const [section, setSection] = useState("every");
 
   const onDayChange = (e) => {
     if (!e.target.value || (e.target.value > 0 && e.target.value < 32)) {
@@ -34,46 +45,66 @@ const DailyCron = ({ onChange, translate, value }) => {
     val[cronPosition] = _value;
     onChange(val);
   };
+
+  const handleChange = (e) => {
+    setSection(e.target.value);
+    setEvery(e.target.value === "every");
+    //onChange((e.target.value === 'every')?null:["0", value[1], value[2], "?", "*", "MON-FRI", "*"]);
+  };
+
   return (
-    <div className="tab-pane">
-      <div className="well well-small">
-        <input
-          type="radio"
-          onChange={(e) => {
-            setEvery(true);
-            onChange();
-          }}
-          value="1"
-          name="DailyRadio"
-          checked={every}
-        />
-        <span>{translate("Every")}</span>
-        <input
-          disabled={!every}
-          type="Number"
-          maxLength="2"
-          onChange={onDayChange}
-          value={value[3].split("/")[1] ? value[3].split("/")[1] : ""}
-        />
-        <span>{translate("day(s)")}</span>
-      </div>
-      <div className="well well-small">
-        <input
-          onChange={(e) => {
-            setEvery(false);
-            onChange(["0", value[1], value[2], "?", "*", "MON-FRI", "*"]);
-          }}
-          type="radio"
-          value="2"
-          name="DailyRadio"
-          checked={!every}
-        />
-        <span>{translate("Every week day")}</span>
-      </div>
-      <span>{translate("Start time")}</span>
-      <Hour onChange={onAtHourChange} value={value[2]} />
-      <Minutes onChange={onAtMinuteChange} value={value[1]} />
-    </div>
+    <>
+      <FormControl>
+        <RadioGroup value={section} onChange={handleChange}>
+          <FormControlLabel
+            value="every"
+            control={<Radio />}
+            label={
+              <>
+                <EveryText>{translate("Every")} </EveryText>
+                <TextField
+                  label=""
+                  disabled={!every}
+                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="standard"
+                  onChange={onDayChange}
+                  value={value[3].split("/")[1] ? value[3].split("/")[1] : ""}
+                />
+                <EveryText>{translate("day(s)")} </EveryText>
+              </>
+            }
+          />
+          <FormControlLabel
+            value="noevery"
+            control={<Radio />}
+            label={
+              <>
+                <TextField
+                  label=""
+                  disabled={every}
+                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="standard"
+                  onChange={onDayChange}
+                  value={value[3].split("/")[1] ? value[3].split("/")[1] : ""}
+                />
+                <EveryText>{translate("Every week day")} </EveryText>
+              </>
+            }
+          />
+        </RadioGroup>
+      </FormControl>
+      <Box>
+        <FrontHourText>{translate("Start time")}</FrontHourText>
+        <Hour onChange={onAtHourChange} value={value[2]} />
+        <Minutes onChange={onAtMinuteChange} value={value[1]} />
+      </Box>
+    </>
   );
 };
 

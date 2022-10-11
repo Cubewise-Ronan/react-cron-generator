@@ -10,7 +10,7 @@ const cronOptions = {
 */
 
 const App = () => {
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState("* * * * *");
   return (
     <div>
       <div>React cron generator: V {packageConf.version}</div>

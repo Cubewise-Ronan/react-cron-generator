@@ -1,4 +1,6 @@
 import React from "react";
+import { TextField } from "@mui/material";
+import EveryText from "../components/Text/EveryText";
 
 const MinutesCron = ({ onChange, translate, value }) => {
   const onChangeHandle = (e) => {
@@ -10,17 +12,22 @@ const MinutesCron = ({ onChange, translate, value }) => {
   };
 
   return (
-    <div className="well">
-      {translate("Every")}{" "}
-      <input
-        type="Number"
+    <>
+      <EveryText>{translate("Every")}</EveryText>{" "}
+      <TextField
+        label=""
+        type="number"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        variant="standard"
         onChange={onChangeHandle}
         value={value && value.length > 1 ? value[1].split("/")[1] : value}
         min={1}
         max={60}
       />{" "}
-      {translate("minute(s)")}
-    </div>
+      <EveryText>{translate("minute(s)")}</EveryText>
+    </>
   );
 };
 

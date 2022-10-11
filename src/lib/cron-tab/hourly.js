@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Minutes from "../minutes-select";
 import Hour from "../hour-select";
+import FrontHourText from "../components/Text/FrontHourText";
+import EveryText from "../components/Text/EveryText";
+import {
+  TextField,
+  FormControl,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
+} from "@mui/material";
 
 const HourlyCron = ({ onChange, translate, value }) => {
   const [every, setEvery] = useState(false);
+  const [section, setSection] = useState("noevery");
 
   useEffect(() => {
     if (value[2].split("/")[1] || value[2] === "*") {
@@ -49,55 +59,73 @@ const HourlyCron = ({ onChange, translate, value }) => {
     onChange(val);
   };
 
+  const handleChange = (e) => {
+    setSection(e.target.value);
+    setEvery(e.target.value === "every");
+    onChange(
+      e.target.value === "every"
+        ? ["0", "0", "0/1", "1/1", "*", "?", "*"]
+        : null
+    );
+  };
+
   return (
-    <div className="tab-content">
-      <div className="tab-pane active">
-        <div className="well well-small">
-          <input
-            type="radio"
-            onChange={(e) => {
-              setEvery(true);
-              onChange(["0", "0", "0/1", "1/1", "*", "?", "*"]);
-            }}
-            checked={every}
-          />
-          <span>{translate("Every")} </span>
-          <input
-            disabled={!every}
-            type="Number"
-            onChange={onHourChange}
-            value={value[2].split("/")[1] ? value[2].split("/")[1] : ""}
-          />
-          <span>{translate("hour")}</span>
-          <input
-            disabled={!every}
-            type="Number"
-            onChange={onMinuteChange}
-            value={value[1]}
-          />
-          <span>{translate("minutes(s)")}</span>
-        </div>
-        <div className="well well-small margin-right-0 margin-left-0">
-          <div className="text_align_right" style={{ width: "100%" }}>
-            <input
-              type="radio"
-              onChange={(e) => {
-                setEvery(false);
-                onChange();
-              }}
-              checked={!every}
-            />
-            <span className="">{translate("At")}</span>
-            <Hour disabled={every} onChange={onAtHourChange} value={value[2]} />
-            <Minutes
-              disabled={every}
-              onChange={onAtMinuteChange}
-              value={value[1]}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <FormControl>
+      <RadioGroup value={section} onChange={handleChange}>
+        <FormControlLabel
+          value="every"
+          control={<Radio />}
+          label={
+            <>
+              <EveryText>{translate("Every")} </EveryText>
+              <TextField
+                label=""
+                disabled={!every}
+                type="number"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant="standard"
+                onChange={onHourChange}
+                value={value[2].split("/")[1] ? value[2].split("/")[1] : ""}
+              />
+              <EveryText>{translate("hour")}</EveryText>
+              <TextField
+                label=""
+                disabled={!every}
+                type="number"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant="standard"
+                onChange={onMinuteChange}
+                value={value[1]}
+              />
+              <EveryText>{translate("minutes(s)")}</EveryText>
+            </>
+          }
+        />
+        <FormControlLabel
+          value="noevery"
+          control={<Radio />}
+          label={
+            <>
+              <FrontHourText>{translate("At")}</FrontHourText>
+              <Hour
+                disabled={every}
+                onChange={onAtHourChange}
+                value={value[2]}
+              />
+              <Minutes
+                disabled={every}
+                onChange={onAtMinuteChange}
+                value={value[1]}
+              />
+            </>
+          }
+        />
+      </RadioGroup>
+    </FormControl>
   );
 };
 

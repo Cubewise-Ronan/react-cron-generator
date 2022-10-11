@@ -1,4 +1,5 @@
 import React from "react";
+import { TextField } from "@mui/material";
 
 const CustomCron = ({ onChange, translate, value }) => {
   const onChangeHandle = (e) => {
@@ -8,8 +9,9 @@ const CustomCron = ({ onChange, translate, value }) => {
   return (
     <div className="well">
       {translate("Expression")}{" "}
-      <input
-        type="text"
+      <TextField
+        label=""
+        variant="standard"
         onChange={onChangeHandle}
         value={value.toString().replace(/,/g, " ").replace(/!/g, ",")}
       />

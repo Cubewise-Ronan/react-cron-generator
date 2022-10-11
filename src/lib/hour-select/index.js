@@ -1,27 +1,29 @@
 import React, { useMemo } from "react";
+import { Select, MenuItem, FormControl } from "@mui/material";
 
 const Hour = ({ disabled, onChange, value }) => {
   const buildOptions = useMemo(() => {
     let options = [];
     for (let i = 0; i < 24; i++) {
       options.push(
-        <option key={i} id={i}>
+        <MenuItem key={i} id={i} value={i}>
           {(i < 10 ? "0" : "") + i}
-        </option>
+        </MenuItem>
       );
     }
     return options;
   }, []);
 
   return (
-    <select
-      disabled={disabled === true ? true : false}
-      className="hours"
-      onChange={onChange ? onChange : () => {}}
-      value={value}
-    >
-      {buildOptions}
-    </select>
+    <FormControl variant="standard" sx={{ m: 1, minWidth: 80 }}>
+      <Select
+        disabled={disabled === true ? true : false}
+        onChange={onChange ? onChange : () => {}}
+        value={Number(value)}
+      >
+        {buildOptions}
+      </Select>
+    </FormControl>
   );
 };
 

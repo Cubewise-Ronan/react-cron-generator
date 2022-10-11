@@ -1,6 +1,14 @@
 import React from "react";
 import Minutes from "../minutes-select";
 import Hour from "../hour-select";
+import FrontHourText from "../components/Text/FrontHourText";
+import {
+  Box,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  Checkbox,
+} from "@mui/material";
 
 const WeeklyCron = ({ onChange, translate, value }) => {
   const onAtHourChange = (e) => {
@@ -52,77 +60,93 @@ const WeeklyCron = ({ onChange, translate, value }) => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="well well-small row">
-        <div className="span6 col-sm-6">
-          <div className="text_align_left">
-            <input
-              type="checkbox"
-              value="MON"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("MON") !== -1 ? true : false}
+    <>
+      <Box>
+        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("MON") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="MON"
+                />
+              }
+              label={translate("Monday")}
             />
-            {translate("Monday")}
-            <br />
-            <input
-              type="checkbox"
-              value="WED"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("WED") !== -1 ? true : false}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("WED") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="WED"
+                />
+              }
+              label={translate("Wednesday")}
             />
-            {translate("Wednesday")}
-            <br />
-            <input
-              type="checkbox"
-              value="FRI"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("FRI") !== -1 ? true : false}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("FRI") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="FRI"
+                />
+              }
+              label={translate("Friday")}
             />
-            {translate("Friday")}
-            <br />
-            <input
-              type="checkbox"
-              value="SUN"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("SUN") !== -1 ? true : false}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("SUN") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="SUN"
+                />
+              }
+              label={translate("Sunday")}
             />
-            {translate("Sunday")}
-          </div>
-        </div>
-        <div className="span6 col-sm-6">
-          <div className="text_align_left">
-            <input
-              type="checkbox"
-              value="TUE"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("TUE") !== -1 ? true : false}
+          </FormGroup>
+        </FormControl>
+        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("TUE") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="TUE"
+                />
+              }
+              label={translate("Tuesday")}
             />
-            {translate("Tuesday")}
-            <br />
-            <input
-              type="checkbox"
-              value="THU"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("THU") !== -1 ? true : false}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("THU") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="THU"
+                />
+              }
+              label={translate("Thursday")}
             />
-            {translate("Thursday")}
-            <br />
-            <input
-              type="checkbox"
-              value="SAT"
-              onChange={(e) => onCheck(e)}
-              checked={value[5].search("SAT") !== -1 ? true : false}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={value[5].search("SAT") !== -1 ? true : false}
+                  onChange={(e) => onCheck(e)}
+                  value="SAT"
+                />
+              }
+              label={translate("Saturday")}
             />
-            {translate("Saturday")}
-          </div>
-          <br />
-          <br />
-        </div>
-      </div>
-      {translate("Start time")}
-      <Hour onChange={onAtHourChange} value={value[2]} />
-      <Minutes onChange={onAtMinuteChange} value={value[1]} />
-    </div>
+          </FormGroup>
+        </FormControl>
+      </Box>
+      <Box>
+        <FrontHourText>{translate("Start time")}</FrontHourText>
+        <Hour onChange={onAtHourChange} value={value[2]} />
+        <Minutes onChange={onAtMinuteChange} value={value[1]} />
+      </Box>
+    </>
   );
 };
 
