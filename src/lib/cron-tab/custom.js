@@ -1,24 +1,20 @@
-import React, { Component } from 'react';
+import React from "react";
 
-export default class CustomCron extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+const CustomCron = ({ onChange, translate, value }) => {
+  const onChangeHandle = (e) => {
+    onChange(e.target.value.replace(/,/g, "!").split(" "));
+  };
 
-    onChange(e) {
-        this.props.onChange(e.target.value.replace(/,/g, '!').split(" "));
-    }
+  return (
+    <div className="well">
+      {translate("Expression")}{" "}
+      <input
+        type="text"
+        onChange={onChangeHandle}
+        value={value.toString().replace(/,/g, " ").replace(/!/g, ",")}
+      />
+    </div>
+  );
+};
 
-    render() {
-        const translateFn = this.props.translate;
-        this.state.value = this.props.value;
-
-        let val = this.props.value.toString().replace(/,/g,' ').replace(/!/g, ',');
-
-        return (<div className="well">   
-               {translateFn('Expression')} <input type="text" onChange={this.onChange.bind(this)} value={val} />
-        </div>)
-    }
-}
+export default CustomCron;

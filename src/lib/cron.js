@@ -1,154 +1,191 @@
 /* eslint-disable react/no-direct-mutation-state */
-import React, { Component } from 'react';
-import cronstrue from 'cronstrue/i18n';
-import { metadata, loadHeaders } from './meta';
-import './cron-builder.css';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import cronstrue from "cronstrue/i18n";
+import { metadata, loadHeaders } from "./meta";
+import "./cron-builder.css";
 
-export default class Cron extends Component {
-    
-    constructor(props) {
-        super(props);
-        this.state = {
-            headers: loadHeaders(this.props.options),
-            locale: this.props.locale ? this.props.locale : 'en'
-        };
-    }
+const Cron = ({
+  value,
+  translateFn,
+  locale,
+  onChange,
+  options,
+  showResultText,
+  showResultCron,
+}) => {
+  const [selectedTab, setSelectedTab] = useState(null);
+  const [thisValue, setThisValue] = useState(value);
+  const headers = useMemo(() => loadHeaders(options), [options]);
 
-    UNSAFE_componentWillMount() {
-        this.setValue(this.props.value) 
-        if(this.props.translateFn && !this.props.locale) {
-            console.log('Warning !!! locale not set while using translateFn');
-        }
-        if(this.props.onRef) {
-            this.props.onRef(this);
-        }
+  const getVal = useCallback(() => {
+    let val = cronstrue.toString(
+      thisValue?.toString().replace(/,/g, " ").replace(/!/g, ","),
+      { throwExceptionOnParseError: false, locale }
+    );
+    if (val.search("undefined") === -1) {
+      return val;
     }
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if(this.props.value !== nextProps.value && this.state.value) {
-            let newVal = '';
-            newVal = this.state.value.toString().replace(/,/g,' ');
-            newVal = newVal.replace(/!/g, ',');
-            if(nextProps.value !== newVal) {
-                this.setValue(nextProps.value) 
-            }
-        }
-    }
+    return "-";
+  }, [locale, thisValue]);
 
-    setValue(value) {
-        let prevState = this.state;
-        prevState.value = value;
-        const allHeaders = loadHeaders();
-        if(prevState.value  && prevState.value.split(' ').length === 6) {
-            prevState.value += ' *'
-        }
-        if(!prevState.value  || prevState.value.split(' ').length !== 7) {
-            prevState.value = ['0','0','00','1/1','*','?','*']
-            prevState.selectedTab = allHeaders[0];
-            this.parentChange(prevState.value);
-        } else  {
-            prevState.value = prevState.value.replace(/,/g, '!').split(' ');
-        }
-        let val = prevState.value;
-        if((val[1].search('/') !== -1) && (val[2] === '*') && (val[3] === '1/1')) {
-            prevState.selectedTab = allHeaders[0];
-        } else if((val[3] === '1/1')) {
-            prevState.selectedTab = allHeaders[1];
-        } else if((val[3].search('/') !== -1) || (val[5] === 'MON-FRI')) {
-            prevState.selectedTab = allHeaders[2];
-        } else if (val[3] === '?') {
-            prevState.selectedTab = allHeaders[3];
-        } else if (val[3].startsWith('L') || val[4] === '1/1') {
-            prevState.selectedTab = allHeaders[4];
-        } else {
-            prevState.selectedTab = allHeaders[0];
-        }
-        if(!prevState.headers.includes(prevState.selectedTab)) {
-            prevState.selectedTab = prevState.headers[0]
-        }
-        // this.parentChange(prevState.value)
-        this.setState(prevState)
-    }
-    tabChanged(tab) {
-        if(this.state.selectedTab !== tab) {
-            this.setState({selectedTab: tab, value:this.defaultValue(tab) }, ()=>this.parentChange(this.defaultValue(tab))); 
-        }
-    }
+  const parentChange = useCallback(
+    (val) => {
+      onChange(val?.toString().replace(/,/g, " ").replace(/!/g, ","), getVal());
+    },
+    [getVal, onChange]
+  );
 
-    getHeaders() {
-        return this.state.headers.map((d, index) => {
-            return <li className="nav-item" key={index} ><a className={`nav-link ${this.state.selectedTab === d ? 'active' : ''}`} onClick={this.tabChanged.bind(this,d)}>{this.translate(d)}</a></li>
-        })
-    }
+  const setValue = useCallback(
+    (value) => {
+      const allHeaders = loadHeaders();
+      let _value = value;
+      let _selectedTab = selectedTab;
+      if (_value && _value.split(" ").length === 6) {
+        _value += " *";
+      }
+      if (!_value || _value.split(" ").length !== 7) {
+        _value = ["0", "0", "00", "1/1", "*", "?", "*"];
+        _selectedTab = allHeaders[0];
+        parentChange(_value);
+      } else {
+        _value = _value.replace(/,/g, "!").split(" ");
+      }
+      let _values = _value;
+      if (
+        _values[1].search("/") !== -1 &&
+        _values[2] === "*" &&
+        _values[3] === "1/1"
+      ) {
+        _selectedTab = allHeaders[0];
+      } else if (_values[3] === "1/1") {
+        _selectedTab = allHeaders[1];
+      } else if (_values[3].search("/") !== -1 || _values[5] === "MON-FRI") {
+        _selectedTab = allHeaders[2];
+      } else if (_values[3] === "?") {
+        _selectedTab = allHeaders[3];
+      } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
+        _selectedTab = allHeaders[4];
+      } else {
+        _selectedTab = allHeaders[0];
+      }
+      if (!headers.includes(_selectedTab)) {
+        _selectedTab = headers[0];
+      }
 
-    onValueChange(val) {     
-        if(val && val.length) {
-            this.setState({ value:val }, ()=>this.parentChange(val));
-        } else { 
-            val = ['0','0','00','1/1','*','?','*']
-            this.setState({ value:  val}, ()=>this.parentChange(val));
-            // val = ['0','0','00','1/1','*','?','*'];
-        }
-    }
+      setSelectedTab(_selectedTab);
+      setThisValue(_value);
+    },
+    [headers, parentChange, selectedTab]
+  );
 
-    parentChange(val) {
-        let newVal = '';
-        newVal = val.toString().replace(/,/g,' ');
-        newVal = newVal.replace(/!/g, ',');
-        this.props.onChange(newVal, this.getVal()) 
+  const tabChanged = (tab) => {
+    if (selectedTab !== tab) {
+      setSelectedTab(tab);
+      setThisValue(defaultValue(tab));
     }
+  };
 
-    getVal() {
-        let val = cronstrue.toString(this.state.value.toString().replace(/,/g,' ').replace(/!/g, ','), { throwExceptionOnParseError: false, locale: this.state.locale })
-        if(val.search('undefined') === -1) {
-            return val;
-        }
-        return '-';   
-    }
+  const getHeaders = () =>
+    headers.map((d, index) => (
+      <li className="nav-item" key={index}>
+        <a
+          href="/#"
+          className={`nav-link ${selectedTab === d ? "active" : ""}`}
+          onClick={() => {
+            tabChanged(d);
+          }}
+        >
+          {translate(d)}
+        </a>
+      </li>
+    ));
 
-    defaultValue(tab) {
-        let defaultValCron = metadata.find(m => m.name == tab)
-        if(!defaultValCron || !defaultValCron.initialCron) {
-            return;
-        }
-        return defaultValCron.initialCron;
+  const onValueChange = (val) => {
+    if (!(val && val.length)) {
+      val = ["0", "0", "00", "1/1", "*", "?", "*"];
     }
+    setThisValue(val);
+    parentChange(val);
+  };
 
-    getComponent(tab) {
-        const index = this.state.headers.indexOf(tab);
-        if(metadata[index] === -1) {
-            return;
-        }
-        let selectedMetaData = metadata.find(data => data.name === tab);
-        if(!selectedMetaData) {
-            selectedMetaData = metadata[index];
-        }
-        if(!selectedMetaData) {
-            throw new Error('Value does not match any available headers.');
-        }
-        const CronComponent = selectedMetaData.component;
-        return <CronComponent translate={this.translate.bind(this)} value={this.state.value} onChange={this.onValueChange.bind(this)} />;
+  const defaultValue = (tab) => {
+    let defaultValCron = metadata.find((m) => m.name === tab);
+    if (!defaultValCron || !defaultValCron.initialCron) {
+      return;
     }
+    return defaultValCron.initialCron;
+  };
 
-    translate(key) {
-        let translatedText = key;
-        if(this.props.translateFn) {
-            translatedText = this.props.translateFn(key);
-            if(typeof translatedText !== 'string') {
-                throw new Error('translateFn expects a string translation');
-            }
-        }
-        return translatedText;
+  const getComponent = (tab) => {
+    const index = headers.indexOf(tab);
+    if (metadata[index] === -1) {
+      return;
     }
+    let selectedMetaData = metadata.find((data) => data.name === tab);
+    if (!selectedMetaData) {
+      selectedMetaData = metadata[index];
+    }
+    if (!selectedMetaData) {
+      throw new Error("Value does not match any available headers.");
+    }
+    const CronComponent = selectedMetaData.component;
+    return (
+      <CronComponent
+        translate={translate}
+        value={thisValue}
+        onChange={onValueChange}
+      />
+    );
+  };
 
-    render() {
-        return (    
-            <div className='cron_builder'>
-            <ul className="nav nav-tabs" >
-                {this.getHeaders()}
-            </ul>
-            <div className="cron_builder_bordering">{this.state.selectedTab ? this.getComponent(this.state.selectedTab) : "Select a header"}</div>
-            {this.props.showResultText && <div className="cron-builder-bg">{this.getVal()}</div>}
-            {this.props.showResultCron && <div className="cron-builder-bg">{this.state.value.toString().replace(/,/g,' ').replace(/!/g, ',')}</div>}       
-        </div>)
+  const translate = (key) => {
+    let translatedText = key;
+    if (translateFn) {
+      translatedText = translateFn(key);
+      if (typeof translatedText !== "string") {
+        throw new Error("translateFn expects a string translation");
+      }
     }
-}
+    return translatedText;
+  };
+
+  useEffect(() => {
+    if (translateFn && !locale) {
+      console.log("Warning !!! locale not set while using translateFn");
+    }
+  }, [translateFn, locale]);
+
+  useEffect(() => {
+    parentChange(thisValue);
+  }, [thisValue, parentChange]);
+
+  useEffect(() => {
+    if (value) {
+      const newVal = value.toString().replace(/,/g, " ").replace(/!/g, ",");
+      if (value !== newVal) {
+        setValue(value);
+      }
+    } else {
+      setValue(defaultValue(null));
+    }
+    // dependency setValue will cause infinite render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return (
+    <div className="cron_builder">
+      <ul className="nav nav-tabs">{getHeaders()}</ul>
+      <div className="cron_builder_bordering">
+        {selectedTab ? getComponent(selectedTab) : "Select a header"}
+      </div>
+      {showResultText && <div className="cron-builder-bg">{getVal()}</div>}
+      {showResultCron && (
+        <div className="cron-builder-bg">
+          {thisValue?.toString().replace(/,/g, " ").replace(/!/g, ",")}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Cron;

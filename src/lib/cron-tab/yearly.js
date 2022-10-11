@@ -1,16 +1,5 @@
-import React, { Component } from 'react';
+import React from "react";
 
-export default  class YearlyCron extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+const YearlyCron = () => <div>yearly</div>;
 
-    render() {
-        return (<div>
-            
-                yearly
-        </div>)
-    }
-}
+export default YearlyCron;

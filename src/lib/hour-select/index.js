@@ -1,20 +1,28 @@
-import React, { Component } from 'react';
+import React, { useMemo } from "react";
 
-export default class Hour extends Component {
-
-    render() {
-        return (<select disabled={this.props.disabled === true ? true : false} className="hours" onChange={this.props.onChange ? this.props.onChange : () => {}} value={this.props.value} >
-            {this.buildOptions()}
-        </select>)
+const Hour = ({ disabled, onChange, value }) => {
+  const buildOptions = useMemo(() => {
+    let options = [];
+    for (let i = 0; i < 24; i++) {
+      options.push(
+        <option key={i} id={i}>
+          {(i < 10 ? "0" : "") + i}
+        </option>
+      );
     }
+    return options;
+  }, []);
 
-    buildOptions() {
-        let options = [];
-        for(let i = 0; i < 24; i++) {
-            options.push(<option key={i} id={i}>{(i < 10 ? '0' : '') + i}</option>)
-        }
-        return options;
-    }
-    
-}
+  return (
+    <select
+      disabled={disabled === true ? true : false}
+      className="hours"
+      onChange={onChange ? onChange : () => {}}
+      value={value}
+    >
+      {buildOptions}
+    </select>
+  );
+};
 
+export default Hour;
