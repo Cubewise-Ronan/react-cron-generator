@@ -40,8 +40,6 @@ const Cron = ({
   const setValue = useCallback(
     (value) => {
       const allHeaders = loadHeaders();
-      console.log("value");
-      console.log(value);
       let _value = value;
       let _selectedTab = selectedTab;
       let _tab = tab;
@@ -153,7 +151,7 @@ const Cron = ({
 
   useEffect(() => {
     if (translateFn && !locale) {
-      console.log("Warning !!! locale not set while using translateFn");
+      console.warn("Warning !!! locale not set while using translateFn");
     }
   }, [translateFn, locale]);
 

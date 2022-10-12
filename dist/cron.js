@@ -52,8 +52,6 @@ var Cron = function Cron(_ref) {
   }, [getVal, onChange]);
   var setValue = (0, _react.useCallback)(function (value) {
     var allHeaders = (0, _meta.loadHeaders)();
-    console.log("value");
-    console.log(value);
     var _value = value;
     var _selectedTab = selectedTab;
     var _tab = tab;
@@ -159,7 +157,7 @@ var Cron = function Cron(_ref) {
   };
   (0, _react.useEffect)(function () {
     if (translateFn && !locale) {
-      console.log("Warning !!! locale not set while using translateFn");
+      console.warn("Warning !!! locale not set while using translateFn");
     }
   }, [translateFn, locale]);
   (0, _react.useEffect)(function () {

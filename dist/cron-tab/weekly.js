@@ -45,8 +45,6 @@ var WeeklyCron = function WeeklyCron(_ref) {
     } else {
       val[5] = val[5] + "!" + e.target.value;
     }
-    console.log("onDayChecked");
-    console.log(val);
   };
   var onDayUnChecked = function onDayUnChecked(val, e) {
     val[5] = val[5].split("!");

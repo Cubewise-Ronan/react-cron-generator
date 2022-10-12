@@ -45,8 +45,6 @@ const WeeklyCron = ({ onChange, translate, value }) => {
     } else {
       val[5] = val[5] + "!" + e.target.value;
     }
-    console.log("onDayChecked");
-    console.log(val);
   };
 
   const onDayUnChecked = (val, e) => {
