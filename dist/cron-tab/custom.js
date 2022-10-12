@@ -1,22 +1,27 @@
-import React from "react";
-import { TextField } from "@mui/material";
+"use strict";
 
-const CustomCron = ({ onChange, translate, value }) => {
-  const onChangeHandle = (e) => {
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault").default;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _react = _interopRequireDefault(require("react"));
+var _material = require("@mui/material");
+var CustomCron = function CustomCron(_ref) {
+  var onChange = _ref.onChange,
+    translate = _ref.translate,
+    value = _ref.value;
+  var onChangeHandle = function onChangeHandle(e) {
     onChange(e.target.value.replace(/,/g, "!").split(" "));
   };
-
-  return (
-    <div className="well">
-      {translate("Expression")}{" "}
-      <TextField
-        label=""
-        variant="standard"
-        onChange={onChangeHandle}
-        value={value.toString().replace(/,/g, " ").replace(/!/g, ",")}
-      />
-    </div>
-  );
+  return /*#__PURE__*/_react.default.createElement("div", {
+    className: "well"
+  }, translate("Expression"), " ", /*#__PURE__*/_react.default.createElement(_material.TextField, {
+    label: "",
+    variant: "standard",
+    onChange: onChangeHandle,
+    value: value.toString().replace(/,/g, " ").replace(/!/g, ",")
+  }));
 };
-
-export default CustomCron;
+var _default = CustomCron;
+exports.default = _default;
