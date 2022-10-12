@@ -1,5 +1,5 @@
 {
-  "name": "react-cron-generator",
+  "name": "@cubewise/react-cron-generator",
   "version": "1.3.13",
   "description": "Simple react component to generate cron expression",
   "keywords": [
