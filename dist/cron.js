@@ -26,7 +26,7 @@ var Cron = function Cron(_ref) {
     _useState2 = (0, _slicedToArray2.default)(_useState, 2),
     selectedTab = _useState2[0],
     setSelectedTab = _useState2[1];
-  var _useState3 = (0, _react.useState)(null),
+  var _useState3 = (0, _react.useState)(0),
     _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
     tab = _useState4[0],
     setTab = _useState4[1];
@@ -52,6 +52,9 @@ var Cron = function Cron(_ref) {
   }, [getVal, onChange]);
   var setValue = (0, _react.useCallback)(function (value) {
     var allHeaders = (0, _meta.loadHeaders)();
+    var allUpperHeaders = (options && options.headers ? options.headers : allHeaders).map(function (header) {
+      return header.toUpperCase();
+    });
     var _value = value;
     var _selectedTab = selectedTab;
     var _tab = tab;
@@ -68,31 +71,25 @@ var Cron = function Cron(_ref) {
     var _values = _value;
     if (_values[1].search("/") !== -1 && _values[2] === "*" && _values[3] === "1/1") {
       _selectedTab = allHeaders[0];
-      _tab = 0;
     } else if (_values[3] === "1/1") {
       _selectedTab = allHeaders[1];
-      _tab = 1;
     } else if (_values[3].search("/") !== -1 || _values[5] === "MON-FRI") {
       _selectedTab = allHeaders[2];
-      _tab = 2;
     } else if (_values[3] === "?") {
       _selectedTab = allHeaders[3];
-      _tab = 3;
     } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
       _selectedTab = allHeaders[4];
-      _tab = 4;
     } else {
       _selectedTab = allHeaders[0];
-      _tab = 0;
     }
     if (!headers.includes(_selectedTab)) {
       _selectedTab = headers[0];
-      _tab = 0;
     }
+    _tab = allUpperHeaders.indexOf(_selectedTab.toUpperCase());
     setSelectedTab(_selectedTab);
     setTab(_tab);
     setThisValue(_value);
-  }, [headers, parentChange, selectedTab, tab]);
+  }, [headers, parentChange, selectedTab, tab, options]);
   var tabChanged = function tabChanged(event, tab) {
     if (selectedTab !== headers[tab]) {
       setTab(tab);

@@ -15,7 +15,7 @@ const Cron = ({
   showResultCron,
 }) => {
   const [selectedTab, setSelectedTab] = useState(null);
-  const [tab, setTab] = useState(null);
+  const [tab, setTab] = useState(0);
   const [thisValue, setThisValue] = useState(value);
   const headers = useMemo(() => loadHeaders(options), [options]);
 
@@ -40,6 +40,9 @@ const Cron = ({
   const setValue = useCallback(
     (value) => {
       const allHeaders = loadHeaders();
+      const allUpperHeaders = (
+        options && options.headers ? options.headers : allHeaders
+      ).map((header) => header.toUpperCase());
       let _value = value;
       let _selectedTab = selectedTab;
       let _tab = tab;
@@ -60,33 +63,27 @@ const Cron = ({
         _values[3] === "1/1"
       ) {
         _selectedTab = allHeaders[0];
-        _tab = 0;
       } else if (_values[3] === "1/1") {
         _selectedTab = allHeaders[1];
-        _tab = 1;
       } else if (_values[3].search("/") !== -1 || _values[5] === "MON-FRI") {
         _selectedTab = allHeaders[2];
-        _tab = 2;
       } else if (_values[3] === "?") {
         _selectedTab = allHeaders[3];
-        _tab = 3;
       } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
         _selectedTab = allHeaders[4];
-        _tab = 4;
       } else {
         _selectedTab = allHeaders[0];
-        _tab = 0;
       }
       if (!headers.includes(_selectedTab)) {
         _selectedTab = headers[0];
-        _tab = 0;
       }
+      _tab = allUpperHeaders.indexOf(_selectedTab.toUpperCase());
 
       setSelectedTab(_selectedTab);
       setTab(_tab);
       setThisValue(_value);
     },
-    [headers, parentChange, selectedTab, tab]
+    [headers, parentChange, selectedTab, tab, options]
   );
 
   const tabChanged = (event, tab) => {
