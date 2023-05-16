@@ -14,7 +14,7 @@ export const HEADER = {
   CUSTOM: "CUSTOM",
 };
 
-const HEADER_VALUES = {
+export const HEADER_VALUES = {
   MINUTES: "Minutes",
   HOURLY: "Hourly",
   DAILY: "Daily",
@@ -32,38 +32,41 @@ const defaultTabs = [
   HEADER_VALUES.CUSTOM,
 ];
 
-export const metadata = [
-  {
+export const INITIAL_VALUES = {
+  [HEADER_VALUES.MINUTES]: ["0", "0/1", "*", "*", "*", "?", "*"],
+  [HEADER_VALUES.HOURLY]: ["0", "0", "0/1", "1/1", "*", "?", "*"],
+  [HEADER_VALUES.DAILY]: ["0", "0", "00", "1/1", "*", "?", "*"],
+  [HEADER_VALUES.WEEKLY]: ["0", "0", "00", "?", "*", "*", "*"],
+  [HEADER_VALUES.MONTHLY]: ["0", "0", "00", "1", "1/1", "?", "*"],
+  [HEADER_VALUES.CUSTOM]: ["*", "*", "*", "*", "*", "*", "*"],
+};
+
+export const metadata = {
+  [HEADER_VALUES.MINUTES]: {
     component: Minutes,
-    name: HEADER_VALUES.MINUTES,
-    initialCron: ["0", "0/1", "*", "*", "*", "?", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.MINUTES].join(" "),
   },
-  {
+  [HEADER_VALUES.HOURLY]: {
     component: Hourly,
-    name: HEADER_VALUES.HOURLY,
-    initialCron: ["0", "0", "00", "1/1", "*", "?", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.HOURLY].join(" "),
   },
-  {
+  [HEADER_VALUES.DAILY]: {
     component: Daily,
-    name: HEADER_VALUES.DAILY,
-    initialCron: ["0", "0", "00", "1/1", "*", "?", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.DAILY].join(" "),
   },
-  {
+  [HEADER_VALUES.WEEKLY]: {
     component: Weekly,
-    name: HEADER_VALUES.WEEKLY,
-    initialCron: ["0", "0", "00", "?", "*", "*", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.WEEKLY].join(" "),
   },
-  {
+  [HEADER_VALUES.MONTHLY]: {
     component: Monthly,
-    name: HEADER_VALUES.MONTHLY,
-    initialCron: ["0", "0", "00", "1", "1/1", "?", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.MONTHLY].join(" "),
   },
-  {
+  [HEADER_VALUES.CUSTOM]: {
     component: Custom,
-    name: HEADER_VALUES.CUSTOM,
-    initialCron: ["*", "*", "*", "*", "*", "*", "*"],
+    initialCron: INITIAL_VALUES[HEADER_VALUES.CUSTOM].join(" "),
   },
-];
+};
 
 const validateHeaders = (headers) => {
   const validatedHeaders = [];
@@ -92,4 +95,30 @@ export const loadHeaders = (options) => {
     }
   }
   return defaultTabs;
+};
+
+export const getTabFromValue = (value, headers) => {
+  const allHeaders = loadHeaders();
+  let _values = value;
+  let tabName;
+
+  if (
+    _values[1].search("/") !== -1 &&
+    _values[2] === "*" &&
+    _values[3] === "1/1"
+  ) {
+    tabName = allHeaders[0];
+  } else if (_values[2].search("0/") !== -1) {
+    tabName = allHeaders[1];
+  } else if (_values[3].search("1/") !== -1 || _values[5] === "MON-FRI") {
+    tabName = allHeaders[2];
+  } else if (_values[3] === "?") {
+    tabName = allHeaders[3];
+  } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
+    tabName = allHeaders[4];
+  } else {
+    tabName = headers[0];
+  }
+
+  return tabName;
 };

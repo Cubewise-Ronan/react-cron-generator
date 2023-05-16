@@ -4,6 +4,7 @@ import Minutes from "../minutes-select";
 import Hour from "../hour-select";
 import FrontHourText from "../components/Text/FrontHourText";
 import EveryText from "../components/Text/EveryText";
+import { HEADER_VALUES, INITIAL_VALUES } from "../meta";
 import {
   Box,
   TextField,
@@ -13,13 +14,19 @@ import {
   Radio,
 } from "@mui/material";
 
+const SECTION = {
+  EVERY: "every",
+  EVERY_WEEKDAY: "weekday",
+};
+
 const DailyCron = ({ onChange, translate, value }) => {
-  const [every, setEvery] = useState(value[3] !== "?");
-  const [section, setSection] = useState("every");
+  const [section, setSection] = useState(
+    value[3] === "?" ? SECTION.EVERY_WEEKDAY : SECTION.EVERY
+  );
 
   const onDayChange = (e) => {
     if (!e.target.value || (e.target.value > 0 && e.target.value < 32)) {
-      value = ["0", getValueByIndex(1), getValueByIndex(1), "*", "*", "?", "*"];
+      value = ["0", getValueByIndex(1), getValueByIndex(2), "*", "*", "?", "*"];
       onValueChange(3, e.target.value ? `1/${e.target.value}` : e.target.value);
     }
   };
@@ -48,8 +55,11 @@ const DailyCron = ({ onChange, translate, value }) => {
 
   const handleChange = (e) => {
     setSection(e.target.value);
-    setEvery(e.target.value === "every");
-    //onChange((e.target.value === 'every')?null:["0", value[1], value[2], "?", "*", "MON-FRI", "*"]);
+    if (e.target.value === SECTION.EVERY_WEEKDAY) {
+      onChange(["0", value[1], value[2], "?", "*", "MON-FRI", "*"]);
+    } else {
+      onChange(INITIAL_VALUES[HEADER_VALUES.DAILY]);
+    }
   };
 
   return (
@@ -57,14 +67,14 @@ const DailyCron = ({ onChange, translate, value }) => {
       <FormControl>
         <RadioGroup value={section} onChange={handleChange}>
           <FormControlLabel
-            value="every"
+            value={SECTION.EVERY}
             control={<Radio />}
             label={
               <>
                 <EveryText>{translate("Every")} </EveryText>
                 <TextField
                   label=""
-                  disabled={!every}
+                  disabled={section !== SECTION.EVERY}
                   type="number"
                   InputLabelProps={{
                     shrink: true,
@@ -78,21 +88,10 @@ const DailyCron = ({ onChange, translate, value }) => {
             }
           />
           <FormControlLabel
-            value="noevery"
+            value={SECTION.EVERY_WEEKDAY}
             control={<Radio />}
             label={
               <>
-                <TextField
-                  label=""
-                  disabled={every}
-                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="standard"
-                  onChange={onDayChange}
-                  value={value[3].split("/")[1] ? value[3].split("/")[1] : ""}
-                />
                 <EveryText>{translate("Every week day")} </EveryText>
               </>
             }
