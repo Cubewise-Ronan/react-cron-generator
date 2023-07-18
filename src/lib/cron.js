@@ -2,7 +2,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 import cronstrue from "cronstrue/i18n";
-import { metadata, loadHeaders } from "./meta";
+import {
+  metadata,
+  loadHeaders,
+  getTabFromValue,
+  HEADER_VALUES,
+  INITIAL_VALUES,
+} from "./meta";
 import "./cron-builder.css";
 
 const Cron = ({
@@ -13,22 +19,27 @@ const Cron = ({
   options,
   showResultText,
   showResultCron,
+  className,
+  id,
 }) => {
-  const [selectedTab, setSelectedTab] = useState(null);
-  const [tab, setTab] = useState(0);
-  const [thisValue, setThisValue] = useState(value);
   const headers = useMemo(() => loadHeaders(options), [options]);
+  const [currentTab, setCurrentTab] = useState(headers[0]);
+  const [values, setValues] = useState(null);
+  const currentValue = useMemo(
+    () => (values ? values[currentTab] : null),
+    [values, currentTab]
+  );
 
   const getVal = useCallback(() => {
     let val = cronstrue.toString(
-      thisValue?.toString().replace(/,/g, " ").replace(/!/g, ","),
+      currentValue?.toString().replace(/,/g, " ").replace(/!/g, ","),
       { throwExceptionOnParseError: false, locale }
     );
     if (val.search("undefined") === -1) {
       return val;
     }
     return "-";
-  }, [locale, thisValue]);
+  }, [locale, currentValue]);
 
   const parentChange = useCallback(
     (val) => {
@@ -37,60 +48,40 @@ const Cron = ({
     [getVal, onChange]
   );
 
+  const updateValues = (tabName, val) => {
+    setValues((prev) => ({
+      ...prev,
+      [tabName]: val,
+    }));
+    parentChange(val);
+  };
+
   const setValue = useCallback(
     (value) => {
-      const allHeaders = loadHeaders();
-      const allUpperHeaders = (
-        options && options.headers ? options.headers : allHeaders
-      ).map((header) => header.toUpperCase());
       let _value = value;
-      let _selectedTab = selectedTab;
-      let _tab = tab;
       if (_value && _value.split(" ").length === 6) {
         _value += " *";
       }
       if (!_value || _value.split(" ").length !== 7) {
-        _value = ["0", "0", "00", "1/1", "*", "?", "*"];
-        _selectedTab = allHeaders[0];
-        parentChange(_value);
+        _value = INITIAL_VALUES[HEADER_VALUES.DAILY];
       } else {
         _value = _value.replace(/,/g, "!").split(" ");
       }
-      let _values = _value;
-      if (
-        _values[1].search("/") !== -1 &&
-        _values[2] === "*" &&
-        _values[3] === "1/1"
-      ) {
-        _selectedTab = allHeaders[0];
-      } else if (_values[3] === "1/1") {
-        _selectedTab = allHeaders[1];
-      } else if (_values[3].search("/") !== -1 || _values[5] === "MON-FRI") {
-        _selectedTab = allHeaders[2];
-      } else if (_values[3] === "?") {
-        _selectedTab = allHeaders[3];
-      } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
-        _selectedTab = allHeaders[4];
-      } else {
-        _selectedTab = allHeaders[0];
-      }
-      if (!headers.includes(_selectedTab)) {
-        _selectedTab = headers[0];
-      }
-      _tab = allUpperHeaders.indexOf(_selectedTab.toUpperCase());
-
-      setSelectedTab(_selectedTab);
-      setTab(_tab);
-      setThisValue(_value);
+      const tabName = getTabFromValue(_value, headers);
+      setCurrentTab(tabName);
+      setValues({
+        ...JSON.parse(JSON.stringify(INITIAL_VALUES)),
+        [tabName]: _value,
+      });
     },
-    [headers, parentChange, selectedTab, tab, options]
+    [headers, setCurrentTab, setValues]
   );
 
-  const tabChanged = (event, tab) => {
-    if (selectedTab !== headers[tab]) {
-      setTab(tab);
-      setSelectedTab(headers[tab]);
-      setThisValue(defaultValue(headers[tab]));
+  const tabChanged = (event, tabIndex) => {
+    const newTabName = headers[tabIndex];
+    if (currentTab !== newTabName) {
+      setCurrentTab(newTabName);
+      updateValues(newTabName, values[newTabName]);
     }
   };
 
@@ -99,29 +90,23 @@ const Cron = ({
 
   const onValueChange = (val) => {
     if (!(val && val.length)) {
-      val = ["0", "0", "00", "1/1", "*", "?", "*"];
+      val = INITIAL_VALUES[HEADER_VALUES.DAILY];
     }
-    setThisValue(val);
-    parentChange(val);
+    updateValues(currentTab, val);
   };
 
-  const defaultValue = (tab) => {
-    let defaultValCron = metadata.find((m) => m.name === tab);
+  const defaultValue = (tabName) => {
+    let defaultValCron = metadata[tabName];
     if (!defaultValCron || !defaultValCron.initialCron) {
       return;
     }
     return defaultValCron.initialCron;
   };
 
-  const getComponent = (tab) => {
-    const index = headers.indexOf(tab);
-    if (metadata[index] === -1) {
-      return;
-    }
-    let selectedMetaData = metadata.find((data) => data.name === tab);
-    if (!selectedMetaData) {
-      selectedMetaData = metadata[index];
-    }
+  const getComponent = (tabName) => {
+    if (!tabName || !values) return;
+
+    let selectedMetaData = metadata[tabName];
     if (!selectedMetaData) {
       throw new Error("Value does not match any available headers.");
     }
@@ -129,7 +114,7 @@ const Cron = ({
     return (
       <CronComponent
         translate={translate}
-        value={thisValue}
+        value={values[tabName]}
         onChange={onValueChange}
       />
     );
@@ -147,40 +132,41 @@ const Cron = ({
   };
 
   useEffect(() => {
+    if (!id) return;
+    setValues(null);
+  }, [id, setValues]);
+
+  useEffect(() => {
     if (translateFn && !locale) {
       console.warn("Warning !!! locale not set while using translateFn");
     }
   }, [translateFn, locale]);
 
   useEffect(() => {
-    parentChange(thisValue);
-  }, [thisValue, parentChange]);
-
-  useEffect(() => {
-    if (value) {
-      const newVal = value.toString().replace(/,/g, " ").replace(/!/g, ",");
-      if (value !== newVal) {
-        setValue(value);
-      }
-    } else {
-      setValue(defaultValue(null));
-    }
-    // dependency setValue will cause infinite render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+    // dont do setValue again when values is all set
+    if (values) return;
+    setValue(value ? value : defaultValue(headers[0]));
+  }, [value, values, headers, setValue]);
 
   return (
-    <Box sx={{ width: "100%", typography: "body1" }}>
-      <Tabs value={tab} onChange={tabChanged} aria-label="Time Header">
+    <Box
+      sx={{ width: "100%", typography: "body1" }}
+      className={`cronContainer ${className}`}
+    >
+      <Tabs
+        value={headers.indexOf(currentTab)}
+        onChange={tabChanged}
+        aria-label="Time Header"
+      >
         {getHeaders()}
       </Tabs>
       <div className="cron_builder_bordering">
-        {selectedTab ? getComponent(selectedTab) : "Select a header"}
+        {currentTab ? getComponent(currentTab) : "Select a header"}
       </div>
       {showResultText && <div className="cron-builder-bg">{getVal()}</div>}
       {showResultCron && (
         <div className="cron-builder-bg">
-          {thisValue?.toString().replace(/,/g, " ").replace(/!/g, ",")}
+          {currentValue?.toString().replace(/,/g, " ").replace(/!/g, ",")}
         </div>
       )}
     </Box>

@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/defineProperty"));
+var _objectSpread4 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectSpread2"));
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/slicedToArray"));
 var _react = _interopRequireWildcard(require("react"));
 var _material = require("@mui/material");
@@ -21,24 +23,25 @@ var Cron = function Cron(_ref) {
     onChange = _ref.onChange,
     options = _ref.options,
     showResultText = _ref.showResultText,
-    showResultCron = _ref.showResultCron;
-  var _useState = (0, _react.useState)(null),
-    _useState2 = (0, _slicedToArray2.default)(_useState, 2),
-    selectedTab = _useState2[0],
-    setSelectedTab = _useState2[1];
-  var _useState3 = (0, _react.useState)(0),
-    _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
-    tab = _useState4[0],
-    setTab = _useState4[1];
-  var _useState5 = (0, _react.useState)(value),
-    _useState6 = (0, _slicedToArray2.default)(_useState5, 2),
-    thisValue = _useState6[0],
-    setThisValue = _useState6[1];
+    showResultCron = _ref.showResultCron,
+    className = _ref.className,
+    id = _ref.id;
   var headers = (0, _react.useMemo)(function () {
     return (0, _meta.loadHeaders)(options);
   }, [options]);
+  var _useState = (0, _react.useState)(headers[0]),
+    _useState2 = (0, _slicedToArray2.default)(_useState, 2),
+    currentTab = _useState2[0],
+    setCurrentTab = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
+    _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
+    values = _useState4[0],
+    setValues = _useState4[1];
+  var currentValue = (0, _react.useMemo)(function () {
+    return values ? values[currentTab] : null;
+  }, [values, currentTab]);
   var getVal = (0, _react.useCallback)(function () {
-    var val = _i18n.default.toString(thisValue === null || thisValue === void 0 ? void 0 : thisValue.toString().replace(/,/g, " ").replace(/!/g, ","), {
+    var val = _i18n.default.toString(currentValue === null || currentValue === void 0 ? void 0 : currentValue.toString().replace(/,/g, " ").replace(/!/g, ","), {
       throwExceptionOnParseError: false,
       locale: locale
     });
@@ -46,55 +49,35 @@ var Cron = function Cron(_ref) {
       return val;
     }
     return "-";
-  }, [locale, thisValue]);
+  }, [locale, currentValue]);
   var parentChange = (0, _react.useCallback)(function (val) {
     onChange(val === null || val === void 0 ? void 0 : val.toString().replace(/,/g, " ").replace(/!/g, ","), getVal());
   }, [getVal, onChange]);
-  var setValue = (0, _react.useCallback)(function (value) {
-    var allHeaders = (0, _meta.loadHeaders)();
-    var allUpperHeaders = (options && options.headers ? options.headers : allHeaders).map(function (header) {
-      return header.toUpperCase();
+  var updateValues = function updateValues(tabName, val) {
+    setValues(function (prev) {
+      return (0, _objectSpread4.default)((0, _objectSpread4.default)({}, prev), {}, (0, _defineProperty2.default)({}, tabName, val));
     });
+    parentChange(val);
+  };
+  var setValue = (0, _react.useCallback)(function (value) {
     var _value = value;
-    var _selectedTab = selectedTab;
-    var _tab = tab;
     if (_value && _value.split(" ").length === 6) {
       _value += " *";
     }
     if (!_value || _value.split(" ").length !== 7) {
-      _value = ["0", "0", "00", "1/1", "*", "?", "*"];
-      _selectedTab = allHeaders[0];
-      parentChange(_value);
+      _value = _meta.INITIAL_VALUES[_meta.HEADER_VALUES.DAILY];
     } else {
       _value = _value.replace(/,/g, "!").split(" ");
     }
-    var _values = _value;
-    if (_values[1].search("/") !== -1 && _values[2] === "*" && _values[3] === "1/1") {
-      _selectedTab = allHeaders[0];
-    } else if (_values[3] === "1/1") {
-      _selectedTab = allHeaders[1];
-    } else if (_values[3].search("/") !== -1 || _values[5] === "MON-FRI") {
-      _selectedTab = allHeaders[2];
-    } else if (_values[3] === "?") {
-      _selectedTab = allHeaders[3];
-    } else if (_values[3].startsWith("L") || _values[4] === "1/1") {
-      _selectedTab = allHeaders[4];
-    } else {
-      _selectedTab = allHeaders[0];
-    }
-    if (!headers.includes(_selectedTab)) {
-      _selectedTab = headers[0];
-    }
-    _tab = allUpperHeaders.indexOf(_selectedTab.toUpperCase());
-    setSelectedTab(_selectedTab);
-    setTab(_tab);
-    setThisValue(_value);
-  }, [headers, parentChange, selectedTab, tab, options]);
-  var tabChanged = function tabChanged(event, tab) {
-    if (selectedTab !== headers[tab]) {
-      setTab(tab);
-      setSelectedTab(headers[tab]);
-      setThisValue(defaultValue(headers[tab]));
+    var tabName = (0, _meta.getTabFromValue)(_value, headers);
+    setCurrentTab(tabName);
+    setValues((0, _objectSpread4.default)((0, _objectSpread4.default)({}, JSON.parse(JSON.stringify(_meta.INITIAL_VALUES))), {}, (0, _defineProperty2.default)({}, tabName, _value)));
+  }, [headers, setCurrentTab, setValues]);
+  var tabChanged = function tabChanged(event, tabIndex) {
+    var newTabName = headers[tabIndex];
+    if (currentTab !== newTabName) {
+      setCurrentTab(newTabName);
+      updateValues(newTabName, values[newTabName]);
     }
   };
   var getHeaders = function getHeaders() {
@@ -107,38 +90,27 @@ var Cron = function Cron(_ref) {
   };
   var onValueChange = function onValueChange(val) {
     if (!(val && val.length)) {
-      val = ["0", "0", "00", "1/1", "*", "?", "*"];
+      val = _meta.INITIAL_VALUES[_meta.HEADER_VALUES.DAILY];
     }
-    setThisValue(val);
-    parentChange(val);
+    updateValues(currentTab, val);
   };
-  var defaultValue = function defaultValue(tab) {
-    var defaultValCron = _meta.metadata.find(function (m) {
-      return m.name === tab;
-    });
+  var defaultValue = function defaultValue(tabName) {
+    var defaultValCron = _meta.metadata[tabName];
     if (!defaultValCron || !defaultValCron.initialCron) {
       return;
     }
     return defaultValCron.initialCron;
   };
-  var getComponent = function getComponent(tab) {
-    var index = headers.indexOf(tab);
-    if (_meta.metadata[index] === -1) {
-      return;
-    }
-    var selectedMetaData = _meta.metadata.find(function (data) {
-      return data.name === tab;
-    });
-    if (!selectedMetaData) {
-      selectedMetaData = _meta.metadata[index];
-    }
+  var getComponent = function getComponent(tabName) {
+    if (!tabName || !values) return;
+    var selectedMetaData = _meta.metadata[tabName];
     if (!selectedMetaData) {
       throw new Error("Value does not match any available headers.");
     }
     var CronComponent = selectedMetaData.component;
     return /*#__PURE__*/_react.default.createElement(CronComponent, {
       translate: translate,
-      value: thisValue,
+      value: values[tabName],
       onChange: onValueChange
     });
   };
@@ -153,41 +125,36 @@ var Cron = function Cron(_ref) {
     return translatedText;
   };
   (0, _react.useEffect)(function () {
+    if (!id) return;
+    setValues(null);
+  }, [id, setValues]);
+  (0, _react.useEffect)(function () {
     if (translateFn && !locale) {
       console.warn("Warning !!! locale not set while using translateFn");
     }
   }, [translateFn, locale]);
   (0, _react.useEffect)(function () {
-    parentChange(thisValue);
-  }, [thisValue, parentChange]);
-  (0, _react.useEffect)(function () {
-    if (value) {
-      var newVal = value.toString().replace(/,/g, " ").replace(/!/g, ",");
-      if (value !== newVal) {
-        setValue(value);
-      }
-    } else {
-      setValue(defaultValue(null));
-    }
-    // dependency setValue will cause infinite render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+    // dont do setValue again when values is all set
+    if (values) return;
+    setValue(value ? value : defaultValue(headers[0]));
+  }, [value, values, headers, setValue]);
   return /*#__PURE__*/_react.default.createElement(_material.Box, {
     sx: {
       width: "100%",
       typography: "body1"
-    }
+    },
+    className: "cronContainer ".concat(className)
   }, /*#__PURE__*/_react.default.createElement(_material.Tabs, {
-    value: tab,
+    value: headers.indexOf(currentTab),
     onChange: tabChanged,
     "aria-label": "Time Header"
   }, getHeaders()), /*#__PURE__*/_react.default.createElement("div", {
     className: "cron_builder_bordering"
-  }, selectedTab ? getComponent(selectedTab) : "Select a header"), showResultText && /*#__PURE__*/_react.default.createElement("div", {
+  }, currentTab ? getComponent(currentTab) : "Select a header"), showResultText && /*#__PURE__*/_react.default.createElement("div", {
     className: "cron-builder-bg"
   }, getVal()), showResultCron && /*#__PURE__*/_react.default.createElement("div", {
     className: "cron-builder-bg"
-  }, thisValue === null || thisValue === void 0 ? void 0 : thisValue.toString().replace(/,/g, " ").replace(/!/g, ",")));
+  }, currentValue === null || currentValue === void 0 ? void 0 : currentValue.toString().replace(/,/g, " ").replace(/!/g, ",")));
 };
 var _default = Cron;
 exports.default = _default;
