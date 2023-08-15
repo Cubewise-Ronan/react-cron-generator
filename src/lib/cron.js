@@ -22,7 +22,7 @@ const Cron = ({
   className,
   id,
 }) => {
-  const headers = useMemo(() => loadHeaders(options), [options]);
+  const headers = loadHeaders(options);
   const [currentTab, setCurrentTab] = useState(headers[0]);
   const [values, setValues] = useState(null);
   const currentValue = useMemo(

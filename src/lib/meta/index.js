@@ -89,7 +89,7 @@ export const loadHeaders = (options) => {
   if (options) {
     if (options.headers) {
       if (!options.headers.length) {
-        throw new Error("Atleast one header is required.");
+        throw new Error("At least one header is required.");
       }
       return validateHeaders(options.headers);
     }

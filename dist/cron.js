@@ -26,9 +26,7 @@ var Cron = function Cron(_ref) {
     showResultCron = _ref.showResultCron,
     className = _ref.className,
     id = _ref.id;
-  var headers = (0, _react.useMemo)(function () {
-    return (0, _meta.loadHeaders)(options);
-  }, [options]);
+  var headers = (0, _meta.loadHeaders)(options);
   var _useState = (0, _react.useState)(headers[0]),
     _useState2 = (0, _slicedToArray2.default)(_useState, 2),
     currentTab = _useState2[0],
